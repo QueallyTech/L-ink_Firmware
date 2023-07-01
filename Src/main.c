@@ -408,6 +408,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   MX_NFC_Init();
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
   EpdInitFull();
   /* USER CODE END 2 */
 
