@@ -1,23 +1,32 @@
-#include "main.h"
-#include "app_nfc.h"
-#include "nfc04a1_nfctag.h"
 #include "../E-Paper-Display/epd_w21.h"
+#include "app_nfc.h"
+#include "main.h"
+#include "nfc04a1_nfctag.h"
+#include "tagtype5_wrapper.h"
 #include <stdio.h>
 
 uint8_t cnt = 0;
 uint16_t mblength;
+volatile uint8_t GPOActivated = 0;
+
+sURI_Info URI;
 ST25DV_MB_CTRL_DYN_STATUS mbctrldynstatus;
 ST25DV_EN_STATUS MB_mode;
 ST25DV_PASSWD passwd;
 ST25DV_I2CSSO_STATUS i2csso;
-volatile uint8_t GPOActivated = 0;
-
-void MX_NFC4_MAILBOX_Init(void);
-
-void MX_NFC4_MAILBOX_Process(void);
 
 void MX_NFC_Init(void)
 {
+    /* Init ST25DV driver */
+    while (NFC04A1_NFCTAG_Init(NFC04A1_NFCTAG_INSTANCE) != NFCTAG_OK);
+
+    /* Energy harvesting activated after Power On Reset */
+    NFC04A1_NFCTAG_WriteEHMode(NFC04A1_NFCTAG_INSTANCE, ST25DV_EH_ACTIVE_AFTER_BOOT);
+    NFC04A1_NFCTAG_SetEHENMode_Dyn(NFC04A1_NFCTAG_INSTANCE);
+
+//    NFC04A1_NFCTAG_ResetMBEN_Dyn(NFC04A1_NFCTAG_INSTANCE);
+
+    MX_NFC4_NDEF_URI_Init();
     MX_NFC4_MAILBOX_Init();
 }
 
@@ -26,12 +35,30 @@ void MX_NFC_Process(void)
     MX_NFC4_MAILBOX_Process();
 }
 
+void MX_NFC4_NDEF_URI_Init(void)
+{
+    /* Check if no NDEF detected, init mem in Tag Type 5 */
+    if( NfcType5_NDEFDetection( ) != NDEF_OK )
+    {
+        CCFileStruct.MagicNumber = NFCT5_MAGICNUMBER_E1_CCFILE;
+        CCFileStruct.Version = NFCT5_VERSION_V1_0;
+        CCFileStruct.MemorySize = ( ST25DV_NDEF_MAX_SIZE / 8 ) & 0xFF;
+        CCFileStruct.TT5Tag = 0x05;
+        /* Init of the Type Tag 5 component (M24LR) */
+        while( NfcType5_TT5Init( ) != NFCTAG_OK );
+    }
+
+    /* Prepare URI NDEF message content */
+    strcpy( URI.protocol,URI_ID_0x04_STRING );
+    strcpy( URI.URI_Message,"github.com/QueallyTech/L-ink_Firmware" );
+    strcpy( URI.Information,"\0" );
+
+    /* Write NDEF to EEPROM */
+    while( NDEF_WriteURI( &URI ) != NDEF_OK );
+}
 
 void MX_NFC4_MAILBOX_Init(void)
 {
-    /* Init ST25DV driver */
-    while (NFC04A1_NFCTAG_Init(NFC04A1_NFCTAG_INSTANCE) != NFCTAG_OK);
-
     /* You need to present password to change static configuration */
     NFC04A1_NFCTAG_ReadI2CSecuritySession_Dyn(NFC04A1_NFCTAG_INSTANCE, &i2csso);
     if (i2csso == ST25DV_SESSION_CLOSED)
@@ -41,10 +68,6 @@ void MX_NFC4_MAILBOX_Init(void)
         passwd.LsbPasswd = 0;
         NFC04A1_NFCTAG_PresentI2CPassword(NFC04A1_NFCTAG_INSTANCE, passwd);
     }
-
-    /* Energy harvesting activated after Power On Reset */
-    NFC04A1_NFCTAG_WriteEHMode(NFC04A1_NFCTAG_INSTANCE, ST25DV_EH_ACTIVE_AFTER_BOOT);
-    NFC04A1_NFCTAG_SetEHENMode_Dyn(NFC04A1_NFCTAG_INSTANCE);
 
     /* If not activated, activate Mailbox, as long as MB is ON EEPROM is not available */
     NFC04A1_NFCTAG_ReadMBMode(NFC04A1_NFCTAG_INSTANCE, &MB_mode);
@@ -143,7 +166,6 @@ void MX_NFC4_MAILBOX_Process(void)
     }
 }
 
-
 void BSP_GPO_Callback(void)
 {
     /* Prevent unused argument(s) compilation warning */
@@ -151,5 +173,3 @@ void BSP_GPO_Callback(void)
     /* This function should be implemented by the user application.
        It is called into this driver when an event on Button is triggered. */
 }
-
-
