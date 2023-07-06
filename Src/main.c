@@ -27,7 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "app_nfc.h"
-#include "epd_w21.h"
+#include "Epd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

@@ -1,4 +1,4 @@
-#include "../E-Paper-Display/epd_w21.h"
+#include "../E-Paper-Display/Epd.h"
 #include "app_nfc.h"
 #include "main.h"
 #include "nfc04a1_nfctag.h"
