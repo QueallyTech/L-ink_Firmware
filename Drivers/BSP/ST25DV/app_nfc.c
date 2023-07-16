@@ -46,15 +46,15 @@ void MX_NFC4_NDEF_URI_Init(void)
         CCFileStruct.TT5Tag = 0x05;
         /* Init of the Type Tag 5 component (M24LR) */
         while( NfcType5_TT5Init( ) != NFCTAG_OK );
+
+        /* Prepare URI NDEF message content */
+        strcpy( URI.protocol,URI_ID_0x04_STRING );
+        strcpy( URI.URI_Message,"github.com/QueallyTech/L-ink_Firmware" );
+        strcpy( URI.Information,"\0" );
+
+        /* Write NDEF to EEPROM */
+        while( NDEF_WriteURI( &URI ) != NDEF_OK );
     }
-
-    /* Prepare URI NDEF message content */
-    strcpy( URI.protocol,URI_ID_0x04_STRING );
-    strcpy( URI.URI_Message,"github.com/QueallyTech/L-ink_Firmware" );
-    strcpy( URI.Information,"\0" );
-
-    /* Write NDEF to EEPROM */
-    while( NDEF_WriteURI( &URI ) != NDEF_OK );
 }
 
 void MX_NFC4_MAILBOX_Init(void)
