@@ -41,9 +41,9 @@ void MX_NFC4_NDEF_URI_Init(void)
     if( NfcType5_NDEFDetection( ) != NDEF_OK )
     {
         CCFileStruct.MagicNumber = NFCT5_MAGICNUMBER_E1_CCFILE;
-        CCFileStruct.Version = NFCT5_VERSION_V1_0;
+        CCFileStruct.Version = (NFCT5_VERSION_V1_0 + NFCT5_WRITE_ACCESS); // Version 1.0,Read only
         CCFileStruct.MemorySize = ( ST25DV_NDEF_MAX_SIZE / 8 ) & 0xFF;
-        CCFileStruct.TT5Tag = 0x05;
+        CCFileStruct.TT5Tag = 0x00;
         /* Init of the Type Tag 5 component (M24LR) */
         while( NfcType5_TT5Init( ) != NFCTAG_OK );
 
