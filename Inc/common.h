@@ -66,7 +66,7 @@ typedef struct
 
 /* Exported constants --------------------------------------------------------*/
 #define MAX_NDEF_MEM                 0x100
-#define ST25DV_MAX_SIZE              NFCTAG_4K_SIZE
+#define ST25DV_MAX_SIZE              NFCTAG_16K_SIZE
 #define ST25DV_NDEF_MAX_SIZE         MIN(ST25DV_MAX_SIZE,MAX_NDEF_MEM)
 #define NFC_DEVICE_MAX_NDEFMEMORY    ST25DV_NDEF_MAX_SIZE
 

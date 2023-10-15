@@ -9,7 +9,6 @@ uint8_t cnt = 0;
 uint16_t mblength;
 volatile uint8_t GPOActivated = 0;
 
-sURI_Info URI;
 ST25DV_MB_CTRL_DYN_STATUS mbctrldynstatus;
 ST25DV_EN_STATUS MB_mode;
 ST25DV_PASSWD passwd;
@@ -40,20 +39,26 @@ void MX_NFC4_NDEF_URI_Init(void)
     /* Check if no NDEF detected, init mem in Tag Type 5 */
     if( NfcType5_NDEFDetection( ) != NDEF_OK )
     {
-        CCFileStruct.MagicNumber = NFCT5_MAGICNUMBER_E1_CCFILE;
-        CCFileStruct.Version = (NFCT5_VERSION_V1_0 + NFCT5_WRITE_ACCESS); // Version 1.0,Read only
-        CCFileStruct.MemorySize = ( ST25DV_NDEF_MAX_SIZE / 8 ) & 0xFF;
-        CCFileStruct.TT5Tag = 0x00;
-        /* Init of the Type Tag 5 component (M24LR) */
-        while( NfcType5_TT5Init( ) != NFCTAG_OK );
+		// CC File
+	    const uint8_t CCbuffer[9]={NFCT5_MAGICNUMBER_E2_CCFILE, (NFCT5_VERSION_V1_0 + NFCT5_WRITE_ACCESS), 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, NFCT5_NDEF_MSG_TLV};
+		// NDEF Record:
+	    // Record #1: External type record
+	    // Type: com.queallytech:nfc ,Data: L-ink
+	    // Record #2: URI record
+	    // Type: U ,Protocol field: https://www. ,URI field: github.com/QueallyTech/L-ink_Firmware
+	    const uint8_t Infobuffer[]={0x45,
+	                                0x94, 0x13, 0x05,
+	                                0x63, 0x6F, 0x6D, 0x2E, 0x71, 0x75, 0x65, 0x61, 0x6c, 0x6c, 0x79, 0x74, 0x65, 0x63, 0x68, 0x3A,
+	                                0x6E, 0x66, 0x63, 0x4C, 0x2D, 0x69, 0x6E, 0x6B,
+	                                0x51, 0x01, 0x26, 0x55, 0x02,
+	                                0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2E, 0x63, 0x6F, 0x6D, 0x2F, 0x51, 0x75, 0x65, 0x61, 0x6C, 0x6C, 0x79, 0x54, 0x65, 0x63, 0x68, 0x2F, 0x4C, 0x2D, 0x69, 0x6E, 0x6B, 0x5F, 0x46, 0x69, 0x72, 0x6D, 0x77, 0x61, 0x72, 0x65, 0xFE};
 
-        /* Prepare URI NDEF message content */
-        strcpy( URI.protocol,URI_ID_0x04_STRING );
-        strcpy( URI.URI_Message,"github.com/QueallyTech/L-ink_Firmware" );
-        strcpy( URI.Information,"\0" );
-
-        /* Write NDEF to EEPROM */
-        while( NDEF_WriteURI( &URI ) != NDEF_OK );
+		uint8_t offset = 0;
+	    // Write CC File
+		while(NFC04A1_NFCTAG_WriteData(NFC04A1_NFCTAG_INSTANCE,CCbuffer, offset, sizeof(CCbuffer)) != NDEF_OK );
+		offset += sizeof(CCbuffer);
+	    // Write NDEF Info Data
+		while(NFC04A1_NFCTAG_WriteData(NFC04A1_NFCTAG_INSTANCE,Infobuffer, offset, sizeof(Infobuffer)) != NDEF_OK );
     }
 }
 
