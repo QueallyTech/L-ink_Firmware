@@ -1,11 +1,11 @@
 #include "Epd.h"
 #include "Epd_base.h"
 
-//#define IL3892 // SSD1608
+//#define IL3829 // SSD1608
 #define SSD1681
 
 void EpdDisFull(unsigned char *DisBuffer, unsigned char Label) {
-#ifdef IL3892
+#ifdef IL3829
     EpdIL3829_DisFull(DisBuffer,Label);
 #endif
 #ifdef SSD1681
@@ -14,7 +14,7 @@ void EpdDisFull(unsigned char *DisBuffer, unsigned char Label) {
 }
 
 void EpdInitFull(void) {
-#ifdef IL3892
+#ifdef IL3829
     EpdIL3829_InitFull();
 #endif
 #ifdef SSD1681
