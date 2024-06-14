@@ -1,8 +1,8 @@
 #include "Epd.h"
 #include "Epd_base.h"
 
-//#define IL3829 // SSD1608
-#define SSD1681
+#define IL3829 // SSD1608
+//#define SSD1681
 
 void EpdDisFull(unsigned char *DisBuffer, unsigned char Label) {
 #ifdef IL3829
